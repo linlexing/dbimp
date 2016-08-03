@@ -2,7 +2,8 @@
 *.o
 *.a
 *.so
-
+*.dat
+*.rar
 # Folders
 _obj
 _test
