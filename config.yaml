@@ -1,0 +1,8 @@
+
+driver: oci8
+dburl: tjmlk/123456@192.168.1.199:1521/orcl
+table: 法人单位表
+query: 
+limit: -1
+filename: export.gob
+outfmt: gob

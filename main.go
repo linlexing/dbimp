@@ -20,8 +20,8 @@ import (
 )
 
 func init() {
-	os.Setenv("NLS_LANG", "AMERICAN_AMERICA.AL32UTF8")
-
+	// os.Setenv("NLS_LANG", "AMERICAN_AMERICA.AL32UTF8")
+	gob.Register(time.Time{})
 }
 func main() {
 	driver := flag.String("driver", "", "db driver")
@@ -46,6 +46,7 @@ func main() {
 	if err = dec.Decode(&cols); err != nil {
 		log.Panic(err)
 	}
+	log.Printf("%#v\n", cols)
 	switch *driver {
 	case "oci8":
 		pnames := []string{}
@@ -109,12 +110,14 @@ func main() {
 			break
 		} else if err != nil {
 			log.WithFields(log.Fields{
-				"no": rn,
+				"no":   rn,
+				"desc": "decode",
 			}).Panic(err)
 		}
 		if _, err = stmt.Exec(out...); err != nil {
 			log.WithFields(log.Fields{
-				"no": rn,
+				"no":   rn,
+				"desc": "exec",
 			}).Panic(err)
 		}
 		if time.Since(preTime).Seconds() > 15 {
@@ -125,19 +128,35 @@ func main() {
 			preTime = time.Now()
 			preCount = rn
 			if err = tx.Commit(); err != nil {
-				log.Panic(err)
+				log.WithFields(log.Fields{
+					"no":   rn,
+					"desc": "commit",
+				}).Panic(err)
 			}
 			if err = stmt.Close(); err != nil {
-				log.Panic(err)
+				log.WithFields(log.Fields{
+					"no":   rn,
+					"desc": "close",
+				}).Panic(err)
 			}
 			if tx, err = db.Beginx(); err != nil {
-				log.Panic(err)
+				log.WithFields(log.Fields{
+					"no":   rn,
+					"desc": "begin",
+				}).Panic(err)
 			}
-			stmt, err = tx.Prepare(strSql)
+			if stmt, err = tx.Prepare(strSql); err != nil {
+				log.WithFields(log.Fields{
+					"no":   rn,
+					"desc": "prepare",
+				}).Panic(err)
+			}
 		}
 	}
 	if err = tx.Commit(); err != nil {
-		log.Panic(err)
+		log.WithFields(log.Fields{
+			"desc": "finish",
+		}).Panic(err)
 	}
 
 	log.WithFields(log.Fields{
